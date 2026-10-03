@@ -1,0 +1,167 @@
+/* Variables de color: se definen una vez y se reutilizan en todo el archivo */
+:root {
+  --fondo: #f4f5f7;
+  --tarjeta: #ffffff;
+  --texto: #1c1f24;
+  --texto-suave: #6b7280;
+  --borde: #d9dce1;
+  --acento: #d64545; /* rojo para Egreso */
+}
+
+/* Si el celular está en modo oscuro, cambiamos solo las variables */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #121417;
+    --tarjeta: #1d2025;
+    --texto: #eceef1;
+    --texto-suave: #9aa1ab;
+    --borde: #33373e;
+    --acento: #f06a6a;
+  }
+}
+
+/* Cuando está elegido "Ingreso", el acento pasa a verde */
+body:has(input[value="Ingreso"]:checked) {
+  --acento: #1f9d55;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--tarjeta);
+  padding: 20px 16px;
+  border-radius: 16px;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+  margin-top: 10px;
+}
+
+input,
+select {
+  font: inherit;
+  font-size: 1rem;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--acento);
+  outline-offset: 1px;
+}
+
+#monto {
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+/* Selector Egreso / Ingreso: ocultamos el círculo del radio y
+   estilizamos el texto como si fueran dos botones */
+.tipo {
+  display: flex;
+  gap: 8px;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tipo legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.tipo label {
+  flex: 1;
+  margin: 0;
+}
+
+.tipo input {
+  position: absolute;
+  opacity: 0;
+}
+
+.tipo span {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.tipo input:checked + span {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+}
+
+.tipo input:focus-visible + span {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 14px;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--acento);
+  border: none;
+  border-radius: 12px;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.6;
+}
+
+#estado {
+  margin: 16px 4px 0;
+  font-size: 0.95rem;
+  color: var(--texto-suave);
+}
+
+#estado.ok {
+  color: #1f9d55;
+}
+
+#estado.error {
+  color: #d64545;
+}

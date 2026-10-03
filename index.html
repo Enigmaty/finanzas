@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- Hace que la página use el ancho real del celular (sin esto se ve diminuta) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finanzas</title>
+  <!-- Ficha de la app: nombre, ícono y colores al instalarla -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#121417">
+  <link rel="icon" href="icono-192.png">
+  <link rel="apple-touch-icon" href="icono-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <h1>Nuevo movimiento</h1>
+
+    <form id="formulario">
+      <!-- Dos "radio buttons": solo se puede elegir uno a la vez -->
+      <fieldset class="tipo">
+        <legend>Tipo</legend>
+        <label><input type="radio" name="tipo" value="Egreso" checked><span>Egreso</span></label>
+        <label><input type="radio" name="tipo" value="Ingreso"><span>Ingreso</span></label>
+      </fieldset>
+
+      <label for="monto">Monto</label>
+      <!-- inputmode="numeric" abre el teclado numérico en el celular -->
+      <input id="monto" type="number" inputmode="numeric" min="1" step="1" placeholder="$0" required>
+
+      <label for="categoria">Categoría</label>
+      <!-- Las opciones las agrega app.js según el tipo elegido -->
+      <select id="categoria" required></select>
+
+      <label for="concepto">Concepto</label>
+      <input id="concepto" type="text" maxlength="100" placeholder="Ej: almuerzo" required>
+
+      <label for="fecha">Fecha</label>
+      <input id="fecha" type="date" required>
+
+      <button id="guardar" type="submit">Guardar</button>
+    </form>
+
+    <!-- Mensaje de éxito o error después de guardar -->
+    <p id="estado" role="status"></p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
