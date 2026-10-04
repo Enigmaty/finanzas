@@ -7,6 +7,12 @@ const CATEGORIAS = {
   Egreso: ['Servicios', 'Gastos', 'Deudas', 'Ahorro'],
 };
 
+// Categoría que aparece elegida al abrir la app o al cambiar de tipo.
+const CATEGORIA_INICIAL = {
+  Ingreso: 'Sueldo',
+  Egreso: 'Gastos',
+};
+
 // Guardamos referencias a los elementos del HTML que vamos a usar.
 const formulario = document.getElementById('formulario');
 const inputMonto = document.getElementById('monto');
@@ -25,6 +31,7 @@ function cargarCategorias(tipo) {
     opcion.textContent = nombre;
     selectCategoria.appendChild(opcion);
   }
+  selectCategoria.value = CATEGORIA_INICIAL[tipo];
 }
 
 // Fecha de hoy en formato AAAA-MM-DD, según la hora local del celular.
