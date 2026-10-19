@@ -13,10 +13,13 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Aviso de sin señal / registros pendientes de envío -->
+  <div id="conexion" class="conexion" hidden></div>
+
   <main>
     <h1>Nuevo movimiento</h1>
 
-    <form id="formulario">
+    <form id="formulario" novalidate>
       <!-- Dos "radio buttons": solo se puede elegir uno a la vez -->
       <fieldset class="tipo">
         <legend>Tipo</legend>
@@ -25,25 +28,79 @@
       </fieldset>
 
       <label for="monto">Monto</label>
-      <!-- inputmode="numeric" abre el teclado numérico en el celular -->
-      <input id="monto" type="number" inputmode="numeric" min="1" step="1" placeholder="$0" required>
+      <!-- type="text" para poder mostrar los puntos ($15.000);
+           inputmode="numeric" igual abre el teclado numérico -->
+      <input id="monto" type="text" inputmode="numeric" placeholder="$0" autocomplete="off">
 
       <label for="categoria">Categoría</label>
-      <!-- Las opciones las agrega app.js según el tipo elegido -->
-      <select id="categoria" required></select>
+      <select id="categoria"></select>
 
       <label for="concepto">Concepto</label>
-      <input id="concepto" type="text" maxlength="100" placeholder="Ej: almuerzo" required>
+      <!-- list="sugerencias" conecta el campo con las sugerencias -->
+      <input id="concepto" type="text" maxlength="100" placeholder="Ej: almuerzo" list="sugerencias" autocomplete="off">
+      <datalist id="sugerencias"></datalist>
 
       <label for="fecha">Fecha</label>
-      <input id="fecha" type="date" required>
+      <input id="fecha" type="date">
 
       <button id="guardar" type="submit">Guardar</button>
     </form>
 
-    <!-- Mensaje de éxito o error después de guardar -->
-    <p id="estado" role="status"></p>
+    <section class="gastos">
+      <div class="gastos-cabecera">
+        <div>
+          <h2>Gastos últimos 7 días</h2>
+          <p id="total-gastos">$0</p>
+        </div>
+        <button id="actualizar" type="button" aria-label="Actualizar">↻</button>
+      </div>
+      <p class="pista">Toca un gasto para editarlo o borrarlo</p>
+      <div id="lista"></div>
+    </section>
   </main>
+
+  <!-- Mensaje inferior (con botón Deshacer cuando corresponde) -->
+  <div id="toast" class="toast" role="status" hidden>
+    <span id="toast-texto"></span>
+    <button id="toast-deshacer" type="button">Deshacer</button>
+  </div>
+
+  <!-- Ventana de pregunta: "¿Monto correcto?", "¿Eliminar?" -->
+  <dialog id="dialogo-pregunta">
+    <h3 id="pregunta-titulo"></h3>
+    <p id="pregunta-mensaje"></p>
+    <div class="dialogo-botones derecha">
+      <button type="button" id="pregunta-no" class="secundario"></button>
+      <button type="button" id="pregunta-si"></button>
+    </div>
+  </dialog>
+
+  <!-- Ventana para editar o borrar un gasto -->
+  <dialog id="dialogo-editar">
+    <form id="form-editar" novalidate>
+      <h3>Editar gasto</h3>
+
+      <label for="editar-monto">Monto</label>
+      <input id="editar-monto" type="text" inputmode="numeric" autocomplete="off">
+
+      <label for="editar-categoria">Categoría</label>
+      <select id="editar-categoria"></select>
+
+      <label for="editar-concepto">Concepto</label>
+      <input id="editar-concepto" type="text" maxlength="100" list="sugerencias-gastos" autocomplete="off">
+      <datalist id="sugerencias-gastos"></datalist>
+
+      <label for="editar-fecha">Fecha</label>
+      <input id="editar-fecha" type="date">
+
+      <div class="dialogo-botones">
+        <button type="button" id="editar-eliminar" class="peligro">Eliminar</button>
+        <span class="espacio"></span>
+        <button type="button" id="editar-cancelar" class="secundario">Cancelar</button>
+        <button type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
 
   <script src="app.js"></script>
 </body>

@@ -152,16 +152,307 @@ button:disabled {
   opacity: 0.6;
 }
 
-#estado {
-  margin: 16px 4px 0;
-  font-size: 0.95rem;
+
+
+
+/* ===================== NUEVO ===================== */
+
+/* El atributo hidden siempre oculta, aunque el elemento tenga display */
+[hidden] {
+  display: none !important;
+}
+
+/* (Idea 11) Franja de sin señal / enviando */
+.conexion {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  max-width: 480px;
+  margin: 12px auto 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.conexion.sin-senal {
+  background: #b45309;
+}
+
+/* Sección de gastos */
+.gastos {
+  margin-top: 28px;
+}
+
+.gastos-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.gastos h2 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--texto-suave);
+  margin: 0;
+}
+
+#total-gastos {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #d64545;
+  margin: 2px 0 0;
+}
+
+.pista {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  margin: 4px 0 12px;
+}
+
+#actualizar {
+  margin: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 1.2rem;
+  color: var(--texto);
+  background: var(--tarjeta);
+  border-radius: 50%;
+}
+
+#actualizar.girando {
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+.dia {
+  background: var(--tarjeta);
+  border-radius: 14px;
+  padding: 4px 16px;
+  margin-bottom: 10px;
+}
+
+.dia-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 10px 0 2px;
+  font-size: 0.8rem;
   color: var(--texto-suave);
 }
 
-#estado.ok {
+.dia-cabecera h3 {
+  font-size: inherit;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Cada gasto es un botón (se puede tocar para editar) */
+.gasto {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 0;
+  background: none;
+  color: var(--texto);
+  border: none;
+  border-top: 1px solid var(--borde);
+  border-radius: 0;
+  font-weight: normal;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gasto:active {
+  transform: none;
+  opacity: 0.6;
+}
+
+.dia-cabecera + .gasto {
+  border-top: none;
+}
+
+.gasto .info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gasto strong {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gasto .info > span {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.pendiente {
+  font-style: normal;
+  color: #d97706;
+}
+
+.monto {
+  font-weight: 600;
+  color: #d64545;
+  white-space: nowrap;
+}
+
+.nada {
+  margin: 4px 0 12px;
+  font-size: 0.9rem;
   color: #1f9d55;
 }
 
-#estado.error {
+.cargando {
+  color: var(--texto-suave);
+  text-align: center;
+  padding: 24px;
+}
+
+.aviso-sin-conexion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--tarjeta);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.aviso-sin-conexion strong {
+  color: var(--texto);
+}
+
+@media (prefers-color-scheme: dark) {
+  #total-gastos,
+  .monto { color: #f06a6a; }
+  .nada { color: #3ecf7f; }
+  .pendiente { color: #fbbf24; }
+}
+
+/* (Idea 9) Mensaje inferior */
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  max-width: 448px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #2b2f36;
+  color: #fff;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.toast span {
+  flex: 1;
+}
+
+#toast-deshacer {
+  margin: 0;
+  padding: 6px 8px;
+  background: transparent;
+  color: #7cc4ff;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Ventanas (pregunta y editar) */
+dialog {
+  width: min(92vw, 420px);
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  background: var(--tarjeta);
+  color: var(--texto);
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+dialog h3 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+
+dialog p {
+  margin: 0;
+  color: var(--texto-suave);
+  line-height: 1.4;
+}
+
+#form-editar {
+  padding: 0;
+  background: none;
+}
+
+.dialogo-botones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.dialogo-botones.derecha {
+  justify-content: flex-end;
+}
+
+.dialogo-botones button {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  background: #d64545;
+}
+
+.dialogo-botones .secundario {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borde);
+}
+
+.dialogo-botones .peligro {
+  background: transparent;
   color: #d64545;
+  padding-left: 0;
+}
+
+.dialogo-botones .peligro-lleno {
+  background: #d64545;
+}
+
+.espacio {
+  flex: 1;
+}
+
+main {
+  padding-bottom: 96px; /* espacio para que el mensaje inferior no tape la lista */
+}
+
+
+/* Margen lateral en pantallas angostas */
+.conexion {
+  width: calc(100% - 32px);
 }
