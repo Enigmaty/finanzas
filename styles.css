@@ -181,7 +181,7 @@ button:disabled {
   background: #b45309;
 }
 
-/* Sección de gastos */
+/* Sección de la lista (gastos o ingresos) */
 .gastos {
   margin-top: 28px;
 }
@@ -199,7 +199,7 @@ button:disabled {
   margin: 0;
 }
 
-#total-gastos {
+#total-lista {
   font-size: 1.8rem;
   font-weight: 700;
   color: #d64545;
@@ -253,8 +253,8 @@ button:disabled {
   margin: 0;
 }
 
-/* Cada gasto es un botón (se puede tocar para editar) */
-.gasto {
+/* Cada gasto o ingreso es un botón (se puede tocar para editar) */
+.movimiento {
   width: 100%;
   display: flex;
   align-items: center;
@@ -273,29 +273,29 @@ button:disabled {
   cursor: pointer;
 }
 
-.gasto:active {
+.movimiento:active {
   transform: none;
   opacity: 0.6;
 }
 
-.dia-cabecera + .gasto {
+.dia-cabecera + .movimiento {
   border-top: none;
 }
 
-.gasto .info {
+.movimiento .info {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.gasto strong {
+.movimiento strong {
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.gasto .info > span {
+.movimiento .info > span {
   font-size: 0.8rem;
   color: var(--texto-suave);
 }
@@ -317,7 +317,8 @@ button:disabled {
   color: #1f9d55;
 }
 
-.cargando {
+.cargando,
+.vacio {
   color: var(--texto-suave);
   text-align: center;
   padding: 24px;
@@ -340,7 +341,7 @@ button:disabled {
 }
 
 @media (prefers-color-scheme: dark) {
-  #total-gastos,
+  #total-lista,
   .monto { color: #f06a6a; }
   .nada { color: #3ecf7f; }
   .pendiente { color: #fbbf24; }
@@ -455,4 +456,17 @@ main {
 /* Margen lateral en pantallas angostas */
 .conexion {
   width: calc(100% - 32px);
+}
+
+/* Lista de ingresos: total y montos en verde */
+#total-lista.ingresos,
+.monto.positivo {
+  color: #1f9d55;
+}
+
+@media (prefers-color-scheme: dark) {
+  #total-lista.ingresos,
+  .monto.positivo {
+    color: #3ecf7f;
+  }
 }

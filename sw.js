@@ -3,7 +3,7 @@
 
 // Si cambias algún archivo de la app, sube este número (v2, v3...)
 // para que el celular descargue la versión nueva.
-const VERSION = 'finanzas-v3';
+const VERSION = 'finanzas-v4';
 const ARCHIVOS = [
   './',
   './index.html',

@@ -49,12 +49,13 @@
     <section class="gastos">
       <div class="gastos-cabecera">
         <div>
-          <h2>Gastos últimos 7 días</h2>
-          <p id="total-gastos">$0</p>
+          <!-- El título, el total y la pista cambian según Egreso / Ingreso -->
+          <h2 id="titulo-lista">Gastos últimos 7 días</h2>
+          <p id="total-lista">$0</p>
         </div>
         <button id="actualizar" type="button" aria-label="Actualizar">↻</button>
       </div>
-      <p class="pista">Toca un gasto para editarlo o borrarlo</p>
+      <p id="pista-lista" class="pista">Toca un gasto para editarlo o borrarlo</p>
       <div id="lista"></div>
     </section>
   </main>
@@ -78,7 +79,7 @@
   <!-- Ventana para editar o borrar un gasto -->
   <dialog id="dialogo-editar">
     <form id="form-editar" novalidate>
-      <h3>Editar gasto</h3>
+      <h3 id="editar-titulo">Editar gasto</h3>
 
       <label for="editar-monto">Monto</label>
       <input id="editar-monto" type="text" inputmode="numeric" autocomplete="off">
@@ -87,8 +88,8 @@
       <select id="editar-categoria"></select>
 
       <label for="editar-concepto">Concepto</label>
-      <input id="editar-concepto" type="text" maxlength="100" list="sugerencias-gastos" autocomplete="off">
-      <datalist id="sugerencias-gastos"></datalist>
+      <input id="editar-concepto" type="text" maxlength="100" list="sugerencias-editar" autocomplete="off">
+      <datalist id="sugerencias-editar"></datalist>
 
       <label for="editar-fecha">Fecha</label>
       <input id="editar-fecha" type="date">

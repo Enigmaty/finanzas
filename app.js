@@ -368,8 +368,10 @@ let enEdicion = null;
 function abrirEdicion(mov) {
   const { pendiente, ...limpio } = mov;
   enEdicion = limpio;
+  $('editar-titulo').textContent = mov.tipo === 'Ingreso' ? 'Editar ingreso' : 'Editar gasto';
   $('editar-monto').value = pesos.format(mov.monto);
-  llenarSelect($('editar-categoria'), 'Egreso', mov.categoria);
+  llenarSelect($('editar-categoria'), mov.tipo, mov.categoria);
+  llenarSugerencias($('sugerencias-editar'), mov.tipo);
   $('editar-concepto').value = mov.concepto;
   $('editar-fecha').value = mov.fecha;
   $('dialogo-editar').showModal();
@@ -396,7 +398,7 @@ async function aplicarCambio(mov, accion) {
     actualizarTodo();
     return true;
   } catch (err) {
-    mostrarToast(textoDeError(err, 'Necesitas señal para editar o borrar un gasto ya enviado.'));
+    mostrarToast(textoDeError(err, 'Necesitas señal para editar o borrar un registro ya enviado.'));
     return false;
   }
 }
@@ -416,7 +418,8 @@ $('form-editar').addEventListener('submit', async (evento) => {
   if (!cambiado.monto) return avisarError('Escribe un monto', $('editar-monto'));
   if (!cambiado.concepto) return avisarError('Escribe un concepto', $('editar-concepto'));
   if (!cambiado.fecha) return avisarError('Elige una fecha', $('editar-fecha'));
-  if (!(await confirmarSiEsRaro(cambiado.concepto, cambiado.monto, cambiado.id))) return;
+  if (cambiado.tipo === 'Egreso' &&
+      !(await confirmarSiEsRaro(cambiado.concepto, cambiado.monto, cambiado.id))) return;
 
   if (await aplicarCambio(cambiado, 'editar')) {
     $('dialogo-editar').close();
@@ -427,7 +430,7 @@ $('form-editar').addEventListener('submit', async (evento) => {
 $('editar-eliminar').addEventListener('click', async () => {
   const mov = enEdicion;
   const seguro = await preguntar({
-    titulo: '¿Eliminar este gasto?',
+    titulo: `¿Eliminar este ${mov.tipo === 'Ingreso' ? 'ingreso' : 'gasto'}?`,
     mensaje: `"${mov.concepto}" por ${pesos.format(mov.monto)}. También desaparecerá de tu Excel la próxima vez que actualices.`,
     si: 'Eliminar',
     no: 'Cancelar',
@@ -491,81 +494,128 @@ function actualizarBanner() {
 window.addEventListener('online', cargar); // recarga la lista y envía lo pendiente
 window.addEventListener('offline', actualizarBanner);
 
-// ---------- Lista de gastos de los últimos 7 días ----------
+// ---------- Lista: gastos de 7 días (Egreso) o ingresos del mes (Ingreso) ----------
 
-function filaDeGasto(g) {
-  const fila = crear('button', 'gasto');
+const sumar = (lista) => lista.reduce((suma, m) => suma + m.monto, 0);
+
+// Nombre del mes actual: "octubre"
+function nombreDelMes() {
+  return new Date().toLocaleDateString('es-CL', { month: 'long' });
+}
+
+function filaDeMovimiento(m) {
+  const esIngreso = m.tipo === 'Ingreso';
+  const fila = crear('button', 'movimiento');
   fila.type = 'button';
   const info = crear('div', 'info');
-  info.appendChild(crear('strong', null, g.concepto));
-  const detalle = crear('span', null, g.categoria);
-  if (g.pendiente) detalle.appendChild(crear('em', 'pendiente', ' · ⏳ Pendiente de envío'));
+  info.appendChild(crear('strong', null, m.concepto));
+  const detalle = crear('span', null, m.categoria);
+  if (m.pendiente) detalle.appendChild(crear('em', 'pendiente', ' · ⏳ Pendiente de envío'));
   info.appendChild(detalle);
   fila.appendChild(info);
-  fila.appendChild(crear('span', 'monto', '−' + pesos.format(g.monto)));
-  fila.addEventListener('click', () => abrirEdicion(g));
+  fila.appendChild(crear('span', esIngreso ? 'monto positivo' : 'monto',
+    (esIngreso ? '+' : '−') + pesos.format(m.monto)));
+  fila.addEventListener('click', () => abrirEdicion(m));
   return fila;
 }
 
-function mostrarGastos() {
+// Tarjeta de un día con su título y (opcional) su subtotal.
+function grupoDelDia(titulo, subtotal) {
+  const grupo = crear('div', 'dia');
+  const cabecera = crear('div', 'dia-cabecera');
+  cabecera.appendChild(crear('h3', null, titulo));
+  if (subtotal !== undefined) cabecera.appendChild(crear('span', null, pesos.format(subtotal)));
+  grupo.appendChild(cabecera);
+  return grupo;
+}
+
+function mostrarLista() {
+  const tipo = tipoElegido();
+  const esIngreso = tipo === 'Ingreso';
+  const totalLista = $('total-lista');
+
+  $('titulo-lista').textContent = esIngreso
+    ? `Ingresos de ${nombreDelMes()}`
+    : `Gastos últimos ${DIAS_A_MOSTRAR} días`;
+  $('pista-lista').textContent = `Toca un ${esIngreso ? 'ingreso' : 'gasto'} para editarlo o borrarlo`;
+  totalLista.className = esIngreso ? 'ingresos' : '';
   lista.innerHTML = '';
+
   const marcarPendiente = (p) => ({ ...p, pendiente: true });
 
   if (!cargado && !errorDeCarga) {
-    lista.appendChild(crear('p', 'cargando', 'Cargando tus gastos…'));
+    totalLista.textContent = '—';
+    lista.appendChild(crear('p', 'cargando', 'Cargando…'));
     return;
   }
 
-  // No se pudo cargar: aviso en vez de la lista (+ lo pendiente)
+  // No se pudo cargar: aviso en vez de la lista (+ lo pendiente de este tipo)
   if (errorDeCarga) {
-    $('total-gastos').textContent = '—';
+    totalLista.textContent = '—';
     const aviso = crear('div', 'aviso-sin-conexion');
     aviso.appendChild(crear('strong', null, errorDeCarga.titulo));
     aviso.appendChild(crear('span', null, errorDeCarga.detalle));
     lista.appendChild(aviso);
-    const propios = pendientes.filter((p) => p.tipo === 'Egreso').map(marcarPendiente);
+    const propios = pendientes.filter((p) => p.tipo === tipo).map(marcarPendiente);
     if (propios.length) {
-      const grupo = crear('div', 'dia');
-      const cabecera = crear('div', 'dia-cabecera');
-      cabecera.appendChild(crear('h3', null, 'Pendientes de envío'));
-      grupo.appendChild(cabecera);
-      propios.forEach((g) => grupo.appendChild(filaDeGasto(g)));
+      const grupo = grupoDelDia('Pendientes de envío');
+      propios.forEach((m) => grupo.appendChild(filaDeMovimiento(m)));
       lista.appendChild(grupo);
     }
     return;
   }
 
-  const gastos = [...movimientos, ...pendientes.map(marcarPendiente)]
-    .filter((m) => m.tipo === 'Egreso')
+  const delTipo = [...movimientos, ...pendientes.map(marcarPendiente)]
+    .filter((m) => m.tipo === tipo)
     .sort((a, b) => String(b.registrado).localeCompare(String(a.registrado)));
 
-  // Recorremos los 7 días uno por uno, aunque alguno no tenga gastos.
+  if (esIngreso) mostrarIngresosDelMes(delTipo);
+  else mostrarGastosDeLaSemana(delTipo);
+}
+
+// Egreso: los 7 días uno por uno, aunque alguno no tenga gastos.
+function mostrarGastosDeLaSemana(gastos) {
   let total = 0;
   for (let i = 0; i < DIAS_A_MOSTRAR; i++) {
     const fecha = haceDias(i);
     const delDia = gastos.filter((g) => g.fecha === fecha);
-    const subtotal = delDia.reduce((suma, g) => suma + g.monto, 0);
+    const subtotal = sumar(delDia);
     total += subtotal;
 
-    const grupo = crear('div', 'dia');
-    const cabecera = crear('div', 'dia-cabecera');
-    cabecera.appendChild(crear('h3', null, nombreDelDia(fecha)));
-    cabecera.appendChild(crear('span', null, pesos.format(subtotal)));
-    grupo.appendChild(cabecera);
-
+    const grupo = grupoDelDia(nombreDelDia(fecha), subtotal);
     if (delDia.length === 0) {
       grupo.appendChild(crear('p', 'nada', 'No gastaste nada este día'));
     }
-    delDia.forEach((g) => grupo.appendChild(filaDeGasto(g)));
+    delDia.forEach((g) => grupo.appendChild(filaDeMovimiento(g)));
     lista.appendChild(grupo);
   }
-  $('total-gastos').textContent = pesos.format(total);
+  $('total-lista').textContent = pesos.format(total);
+}
+
+// Ingreso: todos los del mes actual, agrupados por día (solo los días
+// que tuvieron ingresos, del más reciente al más antiguo).
+function mostrarIngresosDelMes(ingresos) {
+  const mes = haceDias(0).slice(0, 7); // "2026-10"
+  const delMes = ingresos.filter((m) => m.fecha.startsWith(mes));
+  $('total-lista').textContent = pesos.format(sumar(delMes));
+
+  if (delMes.length === 0) {
+    lista.appendChild(crear('p', 'vacio', `Aún no registras ingresos en ${nombreDelMes()}.`));
+    return;
+  }
+
+  const fechas = [...new Set(delMes.map((m) => m.fecha))].sort().reverse();
+  for (const fecha of fechas) {
+    const delDia = delMes.filter((m) => m.fecha === fecha);
+    const grupo = grupoDelDia(nombreDelDia(fecha), sumar(delDia));
+    delDia.forEach((m) => grupo.appendChild(filaDeMovimiento(m)));
+    lista.appendChild(grupo);
+  }
 }
 
 function actualizarTodo() {
-  mostrarGastos();
+  mostrarLista();
   llenarSugerencias($('sugerencias'), tipoElegido());
-  llenarSugerencias($('sugerencias-gastos'), 'Egreso');
   actualizarBanner();
 }
 
@@ -581,7 +631,7 @@ async function cargar() {
   } catch (err) {
     errorDeCarga = err instanceof ErrorDelServidor
       ? { titulo: '⚠️ No se pudo cargar', detalle: `${err.message}. Toca ↻ para intentar de nuevo.` }
-      : { titulo: '📶 Sin conexión', detalle: 'No se pudieron cargar tus gastos. Toca ↻ cuando vuelva la señal.' };
+      : { titulo: '📶 Sin conexión', detalle: 'No se pudieron cargar tus movimientos. Toca ↻ cuando vuelva la señal.' };
   }
   boton.classList.remove('girando');
   actualizarTodo();
@@ -592,11 +642,12 @@ async function cargar() {
 
 inputMonto.addEventListener('input', () => formatearMonto(inputMonto));
 
-// Cuando cambias entre Egreso e Ingreso, cambian las categorías.
+// Cuando cambias entre Egreso e Ingreso, cambian las categorías,
+// las sugerencias y la lista de abajo.
 formulario.addEventListener('change', (evento) => {
   if (evento.target.name === 'tipo') {
     llenarSelect(selectCategoria, evento.target.value);
-    llenarSugerencias($('sugerencias'), evento.target.value);
+    actualizarTodo();
   }
 });
 
